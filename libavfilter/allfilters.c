@@ -179,6 +179,7 @@ extern AVFilter ff_vf_convolve;
 extern AVFilter ff_vf_copy;
 extern AVFilter ff_vf_coreimage;
 extern AVFilter ff_vf_cover_rect;
+extern AVFilter ff_vf_crazy;
 extern AVFilter ff_vf_crop;
 extern AVFilter ff_vf_cropdetect;
 extern AVFilter ff_vf_cue;
