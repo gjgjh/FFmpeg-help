@@ -132,6 +132,7 @@ Component options:
   --disable-swscale        disable libswscale build
   --disable-postproc       disable libpostproc build
   --disable-avfilter       disable libavfilter build
+  --disable-ffhelp         disable libffhelp build
   --enable-avresample      enable libavresample build (deprecated) [no]
   --disable-pthreads       disable pthreads [autodetect]
   --disable-w32threads     disable Win32 threads [autodetect]
@@ -1885,6 +1886,7 @@ LIBRARY_LIST="
     swresample
     avresample
     avutil
+    ffhelp
 "
 
 LICENSE_LIST="
@@ -3606,6 +3608,8 @@ swresample_deps="avutil"
 swresample_suggest="libm libsoxr"
 swscale_deps="avutil"
 swscale_suggest="libm"
+ffhelp_deps="avutil avformat avcodec avfilter swscale swresample avdevice"
+ffhelp_suggest="libm"
 
 avcodec_extralibs="pthreads_extralibs iconv_extralibs dxva2_extralibs"
 avfilter_extralibs="pthreads_extralibs"
@@ -7527,6 +7531,7 @@ extralibs_avresample="$avresample_extralibs"
 extralibs_postproc="$postproc_extralibs"
 extralibs_swscale="$swscale_extralibs"
 extralibs_swresample="$swresample_extralibs"
+extralibs_ffhelp="$ffhelp_extralibs"
 EOF
 
 for lib in $LIBRARY_LIST; do
