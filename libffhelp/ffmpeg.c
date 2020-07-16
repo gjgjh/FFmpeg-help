@@ -339,6 +339,8 @@ static atomic_int transcode_init_done = ATOMIC_VAR_INIT(0);
 static volatile int ffmpeg_exited = 0;
 static int main_return_code = 0;
 
+static volatile int ffmain_break = 0;
+
 static void
 sigterm_handler(int sig)
 {
@@ -4690,6 +4692,10 @@ static int transcode(void)
             if (check_keyboard_interaction(cur_time) < 0)
                 break;
 
+        if ( ffmain_break != 0) {
+            break;
+        }
+
         /* check if there's any stream where output is still needed */
         if (!need_output()) {
             av_log(NULL, AV_LOG_VERBOSE, "No more output streams to write to, finishing.\n");
@@ -4889,9 +4895,13 @@ static void _ffmain_init_(void) {
     transcode_init_done = ATOMIC_VAR_INIT(0);
     ffmpeg_exited = 0;
     main_return_code = 0;
+
+    ffmain_break = 0;
 }
 
-
+void ffmain_signal_exit(void) {
+    ffmain_break = 1;
+}
 
 int ffmain(int argc, const char **argv)
 {
