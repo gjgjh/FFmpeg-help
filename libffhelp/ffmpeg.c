@@ -32,6 +32,7 @@
 #include <limits.h>
 #include <stdatomic.h>
 #include <stdint.h>
+#include <setjmp.h>
 
 #if HAVE_IO_H
 #include <io.h>
@@ -481,6 +482,7 @@ static int decode_interrupt_cb(void *ctx)
 
 const AVIOInterruptCB int_cb = { decode_interrupt_cb, NULL };
 
+static jmp_buf ffmain_jmp;
 static void ffmpeg_cleanup(int ret)
 {
     int i, j;
@@ -633,6 +635,8 @@ static void ffmpeg_cleanup(int ret)
     }
     term_exit();
     ffmpeg_exited = 1;
+
+    longjmp(ffmain_jmp, 1);
 }
 
 void remove_avoptions(AVDictionary **a, AVDictionary *b)
@@ -4887,6 +4891,8 @@ static void _ffmain_init_(void) {
     main_return_code = 0;
 }
 
+
+
 int ffmain(int argc, const char **argv)
 {
     int i, ret;
@@ -4897,6 +4903,10 @@ int ffmain(int argc, const char **argv)
     _cmdutils_init_();
     _opt_init_();
     _ffmain_init_();
+
+    if ( setjmp(ffmain_jmp) ) {
+        return 0;
+    }
 
     init_dynload();
 
