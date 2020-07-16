@@ -480,3 +480,8 @@ int hwaccel_decode_init(AVCodecContext *avctx)
 
     return 0;
 }
+
+void _hw_init_(void) {
+    nb_hw_devices = 0;
+    hw_devices = NULL;
+}

@@ -665,4 +665,8 @@ int hw_device_setup_for_encode(OutputStream *ost);
 
 int hwaccel_decode_init(AVCodecContext *avctx);
 
+void _hw_init_(void);
+void _cmdutils_init_(void);
+void _opt_init_(void);
+
 #endif /* FFTOOLS_FFMPEG_H */

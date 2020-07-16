@@ -4843,10 +4843,60 @@ static void log_callback_null(void *ptr, int level, const char *fmt, va_list vl)
 {
 }
 
+static void _ffmain_init_(void) {
+    vstats_file = NULL;
+
+    run_as_daemon  = 0;
+    nb_frames_dup = 0;
+    dup_warning = 1000;
+    nb_frames_drop = 0;
+    decode_error_stat[0] = 0;
+    decode_error_stat[1] = 0; 
+
+    want_sdp = 1;
+
+    current_time.real_usec = 0;
+    current_time.user_usec = 0;    
+    current_time.sys_usec = 0;
+    
+    progress_avio = NULL;
+
+    subtitle_out = NULL;
+
+    input_streams = NULL;
+    nb_input_streams = 0;
+    input_files   = NULL;
+    nb_input_files   = 0;
+
+    output_streams = NULL;
+    nb_output_streams = 0;
+    output_files   = NULL;
+    nb_output_files   = 0;
+
+    filtergraphs = NULL;
+    nb_filtergraphs = 0;
+
+    #if HAVE_TERMIOS_H
+    restore_tty = 0;
+    #endif
+
+    received_sigterm = 0;
+    received_nb_signals = 0;
+    transcode_init_done = ATOMIC_VAR_INIT(0);
+    ffmpeg_exited = 0;
+    main_return_code = 0;
+}
+
 int ffmain(int argc, const char **argv)
 {
     int i, ret;
     BenchmarkTimeStamps ti;
+
+    // global resource init
+    _hw_init_();
+    _cmdutils_init_();
+    _opt_init_();
+    _ffmain_init_();
 
     init_dynload();
 

@@ -3754,3 +3754,51 @@ const OptionDef options[] = {
 
     { NULL, },
 };
+
+void _opt_init_(void) {
+    hw_device_ctx = NULL;
+    filter_hw_device = NULL;
+    
+    vstats_filename = NULL;
+    sdp_filename = NULL;
+
+    audio_drift_threshold = 0.1;
+    dts_delta_threshold   = 10;
+    dts_error_threshold   = 3600*30;
+
+    audio_volume      = 256;
+    audio_sync_method = 0;
+    video_sync_method = VSYNC_AUTO;
+    frame_drop_threshold = 0;
+    do_deinterlace    = 0;
+    do_benchmark      = 0;
+    do_benchmark_all  = 0;
+    do_hex_dump       = 0;
+    do_pkt_dump       = 0;
+    copy_ts           = 0;
+    start_at_zero     = 0;
+    copy_tb           = -1;
+    debug_ts          = 0;
+    exit_on_error     = 0;
+    abort_on_flags    = 0;
+    print_stats       = -1;
+    qp_hist           = 0;
+    stdin_interaction = 1;
+    frame_bits_per_raw_sample = 0;
+    max_error_rate  = 2.0/3;
+    filter_nbthreads = 0;
+    filter_complex_nbthreads = 0;
+    vstats_version = 2;
+
+
+    intra_only         = 0;
+    file_overwrite     = 0;
+    no_file_overwrite  = 0;
+    do_psnr            = 0;
+    input_sync;
+    input_stream_potentially_available = 0;
+    ignore_unknown_streams = 0;
+    copy_unknown_streams = 0;
+    find_stream_info = 1;
+
+}

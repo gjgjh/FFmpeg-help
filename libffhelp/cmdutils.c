@@ -2349,3 +2349,22 @@ int show_sinks(void *optctx, const char *opt, const char *arg)
 }
 
 #endif
+
+void _cmdutils_init_(void) {
+    sws_dict = NULL;
+    swr_opts = NULL;
+    format_opts = NULL;
+    codec_opts = NULL;
+    resample_opts = NULL;
+
+    report_file = NULL;
+    report_file_level = AV_LOG_DEBUG;
+    hide_banner = 0;
+
+#if HAVE_COMMANDLINETOARGVW && defined(_WIN32)
+    win32_argv_utf8 = NULL;
+    win32_argc = 0;
+#endif
+
+    warned_cfg = 0;
+}
