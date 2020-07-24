@@ -31,16 +31,16 @@
 #include "internal.h"
 #include "video.h"
 
-typedef struct DelogoContext {
+typedef struct CrazyContext {
     const AVClass *class;
     char *arg_;
     char *cb_;
 
-    int (*cb)(AVFrame*, void *);
+    int (*cb)(void *, AVFrame *in, AVFrame **out);
     void *arg;
-}  DelogoContext;
+}  CrazyContext;
 
-#define OFFSET(x) offsetof(DelogoContext, x)
+#define OFFSET(x) offsetof(CrazyContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
 
 static const AVOption crazy_options[]= {
@@ -67,7 +67,7 @@ static int query_formats(AVFilterContext *ctx)
 
 static av_cold int init(AVFilterContext *ctx)
 {
-    DelogoContext *s = ctx->priv;
+    CrazyContext *s = ctx->priv;
 
 #define CHECK_UNSET_OPT(opt)                                            \
     if (s->opt == -1) {                                            \
@@ -77,14 +77,14 @@ static av_cold int init(AVFilterContext *ctx)
     CHECK_UNSET_OPT(arg);
     CHECK_UNSET_OPT(cb);
 
-    s->cb = (int(*)(AVFrame *, void *))strtoll(s->cb_, NULL, 10);
+    s->cb = (int(*)(void *, AVFrame *, AVFrame **))strtoll(s->cb_, NULL, 10);
     s->arg = (void *)strtoll(s->arg_, NULL, 10);
     return 0;
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
-    DelogoContext *s = inlink->dst->priv;
+    CrazyContext *s = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
     AVFrame *out;
@@ -119,13 +119,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
     av_frame_free(&in);
 
-    int ret = s->cb(out, s->arg);
+    AVFrame* filterOut = NULL;
+    int ret = s->cb(s->arg, out, &filterOut);
+
     if ( ret == 0 ) {
-        av_frame_free(&out);
         return 0;
+    } else if ( ret > 0 && (filterOut != NULL) ) {
+        return ff_filter_frame(outlink, filterOut);
     }
 
-    return ff_filter_frame(outlink, out);
+    return AVERROR(ENOMEM);
 }
 
 static const AVFilterPad avfilter_vf_crazy_inputs[] = {
@@ -147,8 +150,8 @@ static const AVFilterPad avfilter_vf_crazy_outputs[] = {
 
 AVFilter ff_vf_crazy = {
     .name          = "crazy",
-    .description   = NULL_IF_CONFIG_SMALL("Remove logo from input video."),
-    .priv_size     = sizeof(DelogoContext),
+    .description   = NULL_IF_CONFIG_SMALL("Crazy video filter by pass function pointer."),
+    .priv_size     = sizeof(CrazyContext),
     .priv_class    = &crazy_class,
     .init          = init,
     .query_formats = query_formats,
