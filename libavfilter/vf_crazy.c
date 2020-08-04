@@ -36,7 +36,7 @@ typedef struct CrazyContext {
     char *arg_;
     char *cb_;
 
-    int (*cb)(void *, AVFrame *in, AVFrame **out);
+    int (*cb)(void *, AVFrame *inOut);
     void *arg;
 }  CrazyContext;
 
@@ -77,7 +77,7 @@ static av_cold int init(AVFilterContext *ctx)
     CHECK_UNSET_OPT(arg);
     CHECK_UNSET_OPT(cb);
 
-    s->cb = (int(*)(void *, AVFrame *, AVFrame **))strtoll(s->cb_, NULL, 10);
+    s->cb = (int(*)(void *, AVFrame *))strtoll(s->cb_, NULL, 10);
     s->arg = (void *)strtoll(s->arg_, NULL, 10);
     return 0;
 }
@@ -86,11 +86,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     CrazyContext *s = inlink->dst->priv;
     AVFilterLink *outlink = inlink->dst->outputs[0];
-    const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
     AVFrame *out;
-    int hsub0 = desc->log2_chroma_w;
-    int vsub0 = desc->log2_chroma_h;
-    int plane;
 
     out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
     if (!out) {
@@ -99,36 +95,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     }
 
     av_frame_copy_props(out, in);
-
-#if 0
-    AVRational sar;
-    sar = in->sample_aspect_ratio;
-    /* Assume square pixels if SAR is unknown */
-    if (!sar.num)
-        sar.num = sar.den = 1;
-#endif
-
-    for (plane = 0; plane < desc->nb_components; plane++) {
-        int hsub = plane == 1 || plane == 2 ? hsub0 : 0;
-        int vsub = plane == 1 || plane == 2 ? vsub0 : 0;
-
-        av_image_copy_plane(out->data[plane], out->linesize[plane],
-                            in ->data[plane], in ->linesize[plane],
-                            AV_CEIL_RSHIFT(inlink->w, hsub),
-                            AV_CEIL_RSHIFT(inlink->h, vsub));
-    }
+    av_frame_copy(out, in);
     av_frame_free(&in);
 
-    AVFrame* filterOut = NULL;
-    int ret = s->cb(s->arg, out, &filterOut);
+    int ret = s->cb(s->arg, out);
 
-    if ( ret == 0 ) {
-        return 0;
-    } else if ( ret > 0 && (filterOut != NULL) ) {
-        return ff_filter_frame(outlink, filterOut);
+    if ( ret < 0 ) {
+        av_frame_free(&out);
+        return AVERROR(EINVAL);
     }
-
-    return AVERROR(ENOMEM);
+    return ff_filter_frame(outlink, out);
 }
 
 static const AVFilterPad avfilter_vf_crazy_inputs[] = {
