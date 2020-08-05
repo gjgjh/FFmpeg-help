@@ -79,6 +79,7 @@ static av_cold int init(AVFilterContext *ctx)
 
     s->cb = (int(*)(void *, AVFrame *))strtoll(s->cb_, NULL, 10);
     s->arg = (void *)strtoll(s->arg_, NULL, 10);
+    s->cb(s->arg, NULL);
     return 0;
 }
 
