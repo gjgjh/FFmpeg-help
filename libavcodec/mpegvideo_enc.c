@@ -1165,12 +1165,13 @@ static int load_input_picture(MpegEncContext *s, const AVFrame *pic_arg)
             if (s->user_specified_pts != AV_NOPTS_VALUE) {
                 int64_t last = s->user_specified_pts;
 
-                if (pts <= last) {
-                    av_log(s->avctx, AV_LOG_ERROR,
-                           "Invalid pts (%"PRId64") <= last (%"PRId64")\n",
-                           pts, last);
-                    return AVERROR(EINVAL);
-                }
+                // TODO: This is temporary, relax the pts constraint
+                // if (pts <= last) {
+                //    av_log(s->avctx, AV_LOG_ERROR,
+                //           "Invalid pts (%"PRId64") <= last (%"PRId64")\n",
+                //           pts, last);
+                //    return AVERROR(EINVAL);
+                // }
 
                 if (!s->low_delay && display_picture_number == 1)
                     s->dts_delta = pts - last;
